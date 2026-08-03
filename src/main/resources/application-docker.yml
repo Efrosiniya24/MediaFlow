@@ -1,0 +1,4 @@
+storage:
+  type: local
+  temp-dir: /tmp/mediaflow
+  permanent-dir: /var/storage/mediaflow

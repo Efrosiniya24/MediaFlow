@@ -1,0 +1,6 @@
+appEnv: prod
+
+storage:
+  type: local
+  temp-dir: C:/Temp/mediaFlow
+  permanent-dir: C:/storage/mediaFlow

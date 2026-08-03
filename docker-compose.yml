@@ -1,0 +1,29 @@
+services:
+  media-flow-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: media_flow_service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+    volumes:
+      - ./data/temp:/tmp/mediaflow
+      - ./data/storage:/var/storage/mediaflow
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6380:6379"
+    command: [ "redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction" ]
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

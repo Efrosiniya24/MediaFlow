@@ -1,0 +1,33 @@
+package com.media.flow.service;
+
+import com.media.flow.record.StoredMedia;
+import org.springframework.web.multipart.MultipartFile;
+
+/**
+ * @author yefrosiniya.zinkovskaya
+ * @since 29.07.2026
+ */
+public interface StorageService {
+    /**
+     * Saves the uploaded file to a temporary location
+     *
+     * @param file the file to save temporarily
+     * @return the temporary stored media reference
+     */
+    StoredMedia saveTemporaryFile(MultipartFile file);
+
+    /**
+     * Persists a temporary file to durable storage
+     *
+     * @param temporary the temporary media to persist
+     * @return the permanent storage location
+     */
+    String savePersistFile(StoredMedia temporary);
+
+    /**
+     * Deletes the stored media file
+     *
+     * @param storedMedia the media to delete
+     */
+    void deleteFile(StoredMedia storedMedia);
+}

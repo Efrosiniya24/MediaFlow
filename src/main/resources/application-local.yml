@@ -1,0 +1,11 @@
+appEnv: local
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6380
+storage:
+  type: local
+  temp-dir: C:/Temp/mediaFlow
+  permanent-dir: C:/storage/mediaFlow
