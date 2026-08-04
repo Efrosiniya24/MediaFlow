@@ -8,8 +8,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -25,34 +24,29 @@ public class MediaFileRedisRepositoryImpl implements MediaFileRedisRepository {
     private final StringRedisTemplate stringRedisTemplate;
 
     @Override
-    public LocalDateTime save(final MediaFile mediaFile) {
+    public Instant save(final MediaFile mediaFile) {
         final UUID mediaId = mediaFile.getId();
         final UUID originFileId = mediaFile.getOriginFileId();
 
-        saveMediaFileData(mediaId, mediaFile);
-        saveMediaFileSetFamily(originFileId, mediaId);
+        saveMediaFileData(mediaId, mediaFile, originFileId);
         return setMediaFileFamilyExpirations(originFileId);
     }
 
-    private void saveMediaFileData(final UUID mediaId, final MediaFile mediaFile) {
-        redisTemplate.opsForValue()
-            .set(RedisKeys.media(mediaId), mediaFile);
-    }
-
-    private void saveMediaFileSetFamily(final UUID originFileId, final UUID mediaId) {
-        stringRedisTemplate.opsForSet()
-            .add(
-                RedisKeys.mediaFamily(originFileId),
-                mediaId.toString()
+    private void saveMediaFileData(final UUID mediaId, final MediaFile mediaFile, final UUID originFileId) {
+        redisTemplate.opsForHash()
+            .put(
+                RedisKeys.media(originFileId),
+                mediaId.toString(),
+                mediaFile
             );
     }
 
-    private LocalDateTime setMediaFileFamilyExpirations(final UUID originFileId) {
-        final LocalDateTime expiresAt = LocalDateTime.now().plus(FAMILY_TTL);
+    private Instant setMediaFileFamilyExpirations(final UUID originFileId) {
+        final Instant expiresAt = Instant.now().plus(FAMILY_TTL);
         stringRedisTemplate.opsForZSet()
             .add(RedisKeys.EXPIRATIONS,
                 originFileId.toString(),
-                expiresAt.toEpochSecond(ZoneOffset.UTC));
+                expiresAt.getEpochSecond());
         return expiresAt;
     }
 }

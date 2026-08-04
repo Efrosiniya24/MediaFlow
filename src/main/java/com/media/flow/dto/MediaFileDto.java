@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -29,5 +29,5 @@ public class MediaFileDto {
     private Integer height;
     private String videoCodec;
     private String audioCodec;
-    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 }

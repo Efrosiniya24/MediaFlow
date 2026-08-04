@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.ReportingPolicy;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * @author yefrosiniya.zinkovskaya
@@ -27,5 +27,5 @@ public interface MediaFileMapper {
     MediaFile toEntity(MediaFileDto dto);
 
     @Mapping(source = "mediaFile.originName", target = "fileName")
-    MediaFileDto toDto(MediaFile mediaFile, LocalDateTime expiresAt);
+    MediaFileDto toDto(MediaFile mediaFile, Instant expiresAt);
 }

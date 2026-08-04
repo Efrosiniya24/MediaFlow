@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -33,22 +33,27 @@ public class MediaFileOperationsServiceImpl implements MediaFileOperationsServic
         try {
             final MediaFileDto mediaFileDto = ffmpegService.getVideoParams(temporary.localPath());
             final MediaFile mediaFile = mediaFileMapper.toEntity(mediaFileDto);
-            final String permanentPath = storageService.savePersistFile(temporary);
-            fillInMediaFile(mediaFile, permanentPath, temporary);
+            final UUID uuid = temporary.id();
+            final String permanentPath = storageService.savePersistFile(temporary, uuid);
+            fillInMediaFile(mediaFile, permanentPath, temporary, uuid);
 
-            final LocalDateTime expiresAt = redisRepository.save(mediaFile);
+            final Instant expiresAt = redisRepository.save(mediaFile);
             return mediaFileMapper.toDto(mediaFile, expiresAt);
         } finally {
             storageService.deleteFile(temporary);
         }
     }
 
-    private void fillInMediaFile(final MediaFile mediaFile, final String permanentPath, final StoredMedia storedMedia) {
-        final UUID uuid = storedMedia.id();
+    private void fillInMediaFile(
+        final MediaFile mediaFile,
+        final String permanentPath,
+        final StoredMedia storedMedia,
+        final UUID uuid
+    ) {
         mediaFile.setId(uuid);
         mediaFile.setOriginFileId(uuid);
         mediaFile.setOriginName(storedMedia.originalName());
         mediaFile.setPath(permanentPath);
-        mediaFile.setCreatedAt(LocalDateTime.now());
+        mediaFile.setCreatedAt(Instant.now());
     }
 }

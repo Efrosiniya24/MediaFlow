@@ -3,6 +3,8 @@ package com.media.flow.service;
 import com.media.flow.record.StoredMedia;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.UUID;
+
 /**
  * @author yefrosiniya.zinkovskaya
  * @since 29.07.2026
@@ -20,9 +22,10 @@ public interface StorageService {
      * Persists a temporary file to durable storage
      *
      * @param temporary the temporary media to persist
+     * @param originFileId originFile id
      * @return the permanent storage location
      */
-    String savePersistFile(StoredMedia temporary);
+    String savePersistFile(StoredMedia temporary, UUID originFileId);
 
     /**
      * Deletes the stored media file

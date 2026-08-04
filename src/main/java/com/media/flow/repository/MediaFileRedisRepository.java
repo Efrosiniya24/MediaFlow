@@ -2,7 +2,7 @@ package com.media.flow.repository;
 
 import com.media.flow.model.MediaFile;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * @author yefrosiniya.zinkovskaya
@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
  */
 public interface MediaFileRedisRepository {
     /**
-     * Saves media file metadata, adds the file id to its family set,
+     * Saves media file metadata into the family hash
      * and refreshes the shared family expiration
      *
      * @param mediaFile media file to save
      * @return the new family expiration time
      */
-    LocalDateTime save(MediaFile mediaFile);
+    Instant save(MediaFile mediaFile);
 }
