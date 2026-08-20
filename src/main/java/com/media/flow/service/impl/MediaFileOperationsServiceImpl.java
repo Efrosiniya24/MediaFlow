@@ -8,12 +8,23 @@ import com.media.flow.repository.MediaFileRedisRepository;
 import com.media.flow.service.FfmpegService;
 import com.media.flow.service.MediaFileOperationsService;
 import com.media.flow.service.StorageService;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author yefrosiniya.zinkovskaya
@@ -22,10 +33,13 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class MediaFileOperationsServiceImpl implements MediaFileOperationsService {
+    private static final Logger log = LoggerFactory.getLogger(MediaFileOperationsServiceImpl.class);
     private final StorageService storageService;
     private final FfmpegService ffmpegService;
     private final MediaFileRedisRepository redisRepository;
     private final MediaFileMapper mediaFileMapper;
+
+    private final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     @Override
     public MediaFileDto uploadAndGetMediaFileData(final MultipartFile file) {
@@ -44,6 +58,46 @@ public class MediaFileOperationsServiceImpl implements MediaFileOperationsServic
         }
     }
 
+    @Override
+    public void cleanUpMediaFiles() {
+        final Instant now = Instant.now();
+
+        final Set<String> expiredIds = redisRepository.findExpiredOriginFileId(now);
+        if (expiredIds.isEmpty()) {
+            return;
+        }
+
+        final List<CompletableFuture<String>> futures = expiredIds.stream()
+            .map(expiredId ->
+                CompletableFuture.supplyAsync(() -> {
+                        storageService.deleteDirectory(expiredId);
+                        return expiredId;
+                    }, executor)
+                    .exceptionally(ex -> {
+                        log.error("Failed to delete directory for originFileId={}", expiredId, ex);
+                        return null;
+                    })
+            )
+            .toList();
+        CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
+
+        final Set<String> succeedDeletedFilesId = futures.stream()
+            .map(CompletableFuture::join)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+        if (succeedDeletedFilesId.isEmpty()) {
+            return;
+        }
+
+        try {
+            redisRepository.deleteFromHash(succeedDeletedFilesId);
+        } catch (final Exception ex) {
+            log.error("Failed to delete file in hash with originFileId={}", succeedDeletedFilesId);
+            return;
+        }
+        redisRepository.deleteFromSet(succeedDeletedFilesId);
+    }
+
     private void fillInMediaFile(
         final MediaFile mediaFile,
         final String permanentPath,
@@ -55,5 +109,18 @@ public class MediaFileOperationsServiceImpl implements MediaFileOperationsServic
         mediaFile.setOriginName(storedMedia.originalName());
         mediaFile.setPath(permanentPath);
         mediaFile.setCreatedAt(Instant.now());
+    }
+
+    @PreDestroy
+    void shutdownExecutor() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (final InterruptedException ex) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

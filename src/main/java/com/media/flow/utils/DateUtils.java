@@ -10,8 +10,23 @@ import java.time.format.DateTimeFormatter;
 public class DateUtils {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /**
+     * Gets today date in format yyyy-MM-dd
+     *
+     * @return today date in format yyyy-MM-dd
+     */
     public static String getCurrentDate() {
         final LocalDate localDate = LocalDate.now();
+        return localDate.format(FORMATTER);
+    }
+
+    /**
+     * Gets yesterday date in format yyyy-MM-dd
+     *
+     * @return yesterday date in format yyyy-MM-dd
+     */
+    public static String getYesterdayDate() {
+        final LocalDate localDate = LocalDate.now().minusDays(1);
         return localDate.format(FORMATTER);
     }
 }

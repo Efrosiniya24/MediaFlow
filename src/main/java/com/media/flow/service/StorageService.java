@@ -21,7 +21,7 @@ public interface StorageService {
     /**
      * Persists a temporary file to durable storage
      *
-     * @param temporary the temporary media to persist
+     * @param temporary    the temporary media to persist
      * @param originFileId originFile id
      * @return the permanent storage location
      */
@@ -33,4 +33,11 @@ public interface StorageService {
      * @param storedMedia the media to delete
      */
     void deleteFile(StoredMedia storedMedia);
+
+    /**
+     * Deletes directory with expired files (files which life more than 30 min)
+     *
+     * @param originFileId original file id which is also a name of directory
+     */
+    void deleteDirectory(final String originFileId);
 }

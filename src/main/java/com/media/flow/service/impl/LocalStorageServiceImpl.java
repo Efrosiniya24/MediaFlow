@@ -16,8 +16,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 /**
  * @author yefrosiniya.zinkovskaya
@@ -61,6 +63,50 @@ public class LocalStorageServiceImpl implements LocalStorageService {
         } catch (final IOException ex) {
             log.error("Failed to delete file", ex);
             throw new StorageException("Failed to delete file");
+        }
+    }
+
+    @Override
+    public void deleteDirectory(final String originFileId) {
+        final Path path = findDirectoryPath(originFileId);
+        if (Objects.isNull(path)) {
+            return;
+        }
+        try (final Stream<Path> walk = Files.walk(path)) {
+            walk.sorted(Comparator.reverseOrder())
+                .forEach(this::deletePath);
+        } catch (final IOException ex) {
+            log.error("Failed to delete directory {}", path, ex);
+            throw new StorageException("Failed to delete directory");
+        }
+    }
+
+    private Path findDirectoryPath(final String originFileId) {
+        final Path todayDirectoryPath = getPath(originFileId, DateUtils.getCurrentDate());
+        if (Files.isDirectory(todayDirectoryPath)) {
+            return todayDirectoryPath;
+        }
+
+        final Path yesterdayDirectoryPath = getPath(originFileId, DateUtils.getYesterdayDate());
+        if (Files.isDirectory(yesterdayDirectoryPath)) {
+            return yesterdayDirectoryPath;
+        }
+        return null;
+    }
+
+    private Path getPath(final String originFileId, final String date) {
+        return Paths.get(
+            storageProperties.getPermanentDir(),
+            date,
+            originFileId
+        );
+    }
+
+    private void deletePath(final Path path) {
+        try {
+            Files.deleteIfExists(path);
+        } catch (final IOException ex) {
+            throw new StorageException("Failed to delete path: " + path);
         }
     }
 

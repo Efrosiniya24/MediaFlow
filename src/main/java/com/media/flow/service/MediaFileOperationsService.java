@@ -17,4 +17,9 @@ public interface MediaFileOperationsService {
      * @return a dto with media metadata, identifiers, and expiration time
      */
     MediaFileDto uploadAndGetMediaFileData(MultipartFile file);
+
+    /**
+     * Clean up redis and the storage from expired files
+     */
+    void cleanUpMediaFiles();
 }
