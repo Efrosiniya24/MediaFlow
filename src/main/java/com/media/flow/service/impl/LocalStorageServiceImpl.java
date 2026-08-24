@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
@@ -67,11 +68,43 @@ public class LocalStorageServiceImpl implements LocalStorageService {
     }
 
     @Override
-    public void deleteDirectory(final String originFileId) {
+    public void deleteDirectoryById(final String originFileId) {
         final Path path = findDirectoryPath(originFileId);
         if (Objects.isNull(path)) {
             return;
         }
+        deleteDirectoryAndFiles(path);
+    }
+
+    @Override
+    public void deleteDirectoryByDate(final String date) {
+        final Path path = getPath(date);
+        if (!Files.isDirectory(path)) {
+            return;
+        }
+        deleteDirectoryAndFiles(path);
+    }
+
+    @Override
+    public void cleanUpOrphanedStorageDirectories() {
+        final LocalDate yesterday = LocalDate.now().minusDays(1);
+        final Path permanentDirectory = Path.of(storageProperties.getPermanentDir());
+
+        try (final Stream<Path> dirs = Files.list(permanentDirectory)) {
+            dirs.filter(Files::isDirectory)
+                .filter(dir -> {
+                    final LocalDate directoryDate = LocalDate.parse(dir.getFileName().toString());
+                    return directoryDate.isBefore(yesterday);
+                })
+                .map(dir -> dir.getFileName().toString())
+                .forEach(this::deleteDirectoryByDate);
+        } catch (final IOException ex) {
+            log.error("Failed to clean up orphaned storage directories", ex);
+            throw new StorageException("Failed to clean up orphaned storage directories");
+        }
+    }
+
+    private void deleteDirectoryAndFiles(final Path path) {
         try (final Stream<Path> walk = Files.walk(path)) {
             walk.sorted(Comparator.reverseOrder())
                 .forEach(this::deletePath);
@@ -99,6 +132,13 @@ public class LocalStorageServiceImpl implements LocalStorageService {
             storageProperties.getPermanentDir(),
             date,
             originFileId
+        );
+    }
+
+    private Path getPath(final String date) {
+        return Paths.get(
+            storageProperties.getPermanentDir(),
+            date
         );
     }
 

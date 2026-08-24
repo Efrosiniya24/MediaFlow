@@ -70,7 +70,7 @@ public class MediaFileOperationsServiceImpl implements MediaFileOperationsServic
         final List<CompletableFuture<String>> futures = expiredIds.stream()
             .map(expiredId ->
                 CompletableFuture.supplyAsync(() -> {
-                        storageService.deleteDirectory(expiredId);
+                        storageService.deleteDirectoryById(expiredId);
                         return expiredId;
                     }, executor)
                     .exceptionally(ex -> {

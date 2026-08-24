@@ -39,5 +39,18 @@ public interface StorageService {
      *
      * @param originFileId original file id which is also a name of directory
      */
-    void deleteDirectory(final String originFileId);
+    void deleteDirectoryById(final String originFileId);
+
+    /**
+     * Deletes date directory older than yesterday together with their files
+     *
+     * @param date directory date in yyyy-MM-dd format
+     */
+    void deleteDirectoryByDate(final String date);
+
+    /**
+     * Checks storage for directories that failed to be deleted on time.
+     * Cleans up those directories along with their files, if they exist
+     */
+    void cleanUpOrphanedStorageDirectories();
 }
