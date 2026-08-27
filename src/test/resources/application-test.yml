@@ -1,0 +1,10 @@
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6380
+
+storage:
+  type: local
+  temp-dir: ./target/test-storage/temp
+  permanent-dir: ./target/test-storage/permanent

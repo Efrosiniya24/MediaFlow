@@ -5,3 +5,12 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6380}
+
+storage:
+  type: ${STORAGE_TYPE:local}
+  temp-dir: ${STORAGE_TEMP_DIR:./data/temp}
+  permanent-dir: ${STORAGE_PERM_DIR:./data/storage}
