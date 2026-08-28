@@ -87,7 +87,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
 
     @Override
     public void cleanUpOrphanedStorageDirectories() {
-        final LocalDate yesterday = LocalDate.now().minusDays(1);
+        final LocalDate yesterday = LocalDate.now().minusDays(2);
         final Path permanentDirectory = Path.of(storageProperties.getPermanentDir());
 
         try (final Stream<Path> dirs = Files.list(permanentDirectory)) {
