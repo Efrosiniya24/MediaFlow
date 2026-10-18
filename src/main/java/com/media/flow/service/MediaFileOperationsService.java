@@ -3,6 +3,8 @@ package com.media.flow.service;
 import com.media.flow.dto.MediaFileDto;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.UUID;
+
 /**
  * @author yefrosiniya.zinkovskaya
  * @since 29.07.2026
@@ -22,4 +24,13 @@ public interface MediaFileOperationsService {
      * Clean up redis and the storage from expired files
      */
     void cleanUpMediaFiles();
+
+    /**
+     * Downloads file from storage
+     *
+     * @param originalFileId original file id
+     * @param id             file id
+     * @return file data for downloading
+     */
+    DownloadResult getDataForDownloading(UUID originalFileId, UUID id);
 }

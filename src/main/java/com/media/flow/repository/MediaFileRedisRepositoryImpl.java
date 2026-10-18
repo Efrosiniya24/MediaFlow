@@ -36,7 +36,6 @@ public class MediaFileRedisRepositoryImpl implements MediaFileRedisRepository {
         return redisSetRepository.findExpiredOriginFileId(now);
     }
 
-
     @Override
     public void deleteFromHash(final Set<String> expiredIds) {
         final Set<String> updatedKeys = updateKeys(expiredIds);
@@ -46,6 +45,11 @@ public class MediaFileRedisRepositoryImpl implements MediaFileRedisRepository {
     @Override
     public void deleteFromSet(final Set<String> expiredIds) {
         redisSetRepository.delete(expiredIds);
+    }
+
+    @Override
+    public MediaFile findByOriginFileIdAndId(final UUID originFileId, final UUID id) {
+        return redisHashRepository.findMediaFile(originFileId, id);
     }
 
     private Set<String> updateKeys(final Set<String> expiredIds) {

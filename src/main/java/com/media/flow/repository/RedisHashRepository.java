@@ -10,4 +10,6 @@ import java.util.UUID;
  */
 public interface RedisHashRepository {
     void saveMediaFileData(UUID mediaId, MediaFile mediaFile, UUID originFileId);
+
+    MediaFile findMediaFile(UUID originFileId, UUID fileId);
 }

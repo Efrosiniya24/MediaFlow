@@ -1,11 +1,11 @@
-FROM maven:3.9-eclipse-temurin-17 AS build
-LABEL authors="yefrosiniya.zinkovskaya"
+FROM maven:3.9-eclipse-temurin-21 AS build
+LABEL author="yefrosiniya.zinkovskaya"
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 RUN mvn -DskipTests package
 
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app

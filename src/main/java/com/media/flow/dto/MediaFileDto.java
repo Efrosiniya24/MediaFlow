@@ -22,6 +22,7 @@ public class MediaFileDto {
     private UUID originFileId;
     private String fileName;
     private MediaType mediaType;
+    private String contentType;
     private Double duration;
     private Long sizeBytes;
     private String format;

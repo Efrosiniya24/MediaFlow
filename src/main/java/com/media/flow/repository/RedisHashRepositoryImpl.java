@@ -1,11 +1,13 @@
 package com.media.flow.repository;
 
 import com.media.flow.constant.RedisKeys;
+import com.media.flow.exception.NotFoundException;
 import com.media.flow.model.MediaFile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -26,5 +28,16 @@ public class RedisHashRepositoryImpl implements RedisHashRepository {
                 mediaId.toString(),
                 mediaFile
             );
+    }
+
+    @Override
+    public MediaFile findMediaFile(final UUID originFileId, final UUID fileId) {
+        final MediaFile mediaFile = (MediaFile) redisTemplate.opsForHash()
+            .get(RedisKeys.media(originFileId), fileId.toString());
+
+        if (Objects.isNull(mediaFile)) {
+            throw new NotFoundException("Media file not found");
+        }
+        return mediaFile;
     }
 }

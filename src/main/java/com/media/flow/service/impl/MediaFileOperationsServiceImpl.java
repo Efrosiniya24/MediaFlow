@@ -5,6 +5,7 @@ import com.media.flow.mapper.MediaFileMapper;
 import com.media.flow.model.MediaFile;
 import com.media.flow.record.StoredMedia;
 import com.media.flow.repository.MediaFileRedisRepository;
+import com.media.flow.service.DownloadResult;
 import com.media.flow.service.FfmpegService;
 import com.media.flow.service.MediaFileOperationsService;
 import com.media.flow.service.StorageService;
@@ -12,6 +13,8 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,7 +52,9 @@ public class MediaFileOperationsServiceImpl implements MediaFileOperationsServic
             final MediaFile mediaFile = mediaFileMapper.toEntity(mediaFileDto);
             final UUID uuid = temporary.id();
             final String permanentPath = storageService.savePersistFile(temporary, uuid);
-            fillInMediaFile(mediaFile, permanentPath, temporary, uuid);
+
+            final String contentType = getContentType(temporary.originalName());
+            fillInMediaFile(mediaFile, permanentPath, temporary, uuid, contentType);
 
             final Instant expiresAt = redisRepository.save(mediaFile);
             return mediaFileMapper.toDto(mediaFile, expiresAt);
@@ -98,17 +103,36 @@ public class MediaFileOperationsServiceImpl implements MediaFileOperationsServic
         redisRepository.deleteFromSet(succeedDeletedFilesId);
     }
 
+    @Override
+    public DownloadResult getDataForDownloading(final UUID originalFileId, final UUID id) {
+        final MediaFile mediaFile = redisRepository.findByOriginFileIdAndId(originalFileId, id);
+        return new DownloadResult.LocalFile(
+            mediaFile.getOriginName(),
+            mediaFile.getContentType(),
+            mediaFile.getPath(),
+            mediaFile.getSizeBytes()
+        );
+    }
+
     private void fillInMediaFile(
         final MediaFile mediaFile,
         final String permanentPath,
         final StoredMedia storedMedia,
-        final UUID uuid
+        final UUID uuid,
+        final String contentType
     ) {
         mediaFile.setId(uuid);
         mediaFile.setOriginFileId(uuid);
         mediaFile.setOriginName(storedMedia.originalName());
         mediaFile.setPath(permanentPath);
         mediaFile.setCreatedAt(Instant.now());
+        mediaFile.setContentType(contentType);
+    }
+
+    private String getContentType(final String fileName) {
+        return MediaTypeFactory.getMediaType(fileName)
+            .map(MediaType::toString)
+            .orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE);
     }
 
     @PreDestroy

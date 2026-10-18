@@ -4,6 +4,7 @@ import com.media.flow.model.MediaFile;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author yefrosiniya.zinkovskaya
@@ -35,4 +36,13 @@ public interface MediaFileRedisRepository {
     void deleteFromHash(final Set<String> expiredIds);
 
     void deleteFromSet(Set<String> expiredIds);
+
+    /**
+     * Finds media file data stored in Redis hash
+     *
+     * @param originFileId original file id
+     * @param id           file id
+     * @return media file data
+     */
+    MediaFile findByOriginFileIdAndId(final UUID originFileId, final UUID id);
 }
