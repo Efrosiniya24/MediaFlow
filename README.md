@@ -1,37 +1,37 @@
 # MediaFlow
 
-## Содержание
+## Table of Contents
 
-- [1 Назначение](#1-назначение)
-- [2 Модель данных](#2-модель-данных)
-    - [2.1 Файлы](#21-файлы)
-        - [Физические файлы](#физические-файлы)
-        - [Данные файлов](#данные-файлов)
+- [1 Purpose](#1-purpose)
+- [2 Data Model](#2-data-model)
+    - [2.1 Files](#21-files)
+        - [Physical files](#physical-files)
+        - [File data](#file-data)
 
-## 1 Назначение
+## 1 Purpose
 
-Обработка медиафайлов (аудио и видео) без регистрации и авторизации.
+Media processing (audio and video) without registration and authentication.
 
-## 2 Модель данных
+## 2 Data Model
 
-### 2.1 Файлы
+### 2.1 Files
 
-### Физические файлы
+### Physical files
 
-**Реализовано:** локальный диск.  
-**В перспективе:** внешнее хранилище.
+**Implemented:** local storage.     
+**Future plans:** external storage.
 
-Постоянный каталог по умолчанию `./data/storage`, временный `./data/temp`.
+The default permanent directory is `./data/storage`. The temporary directory is `./data/temp`.
 
 ```text
-{dir}/
+{permanent-dir}/
 └── yyyy-MM-dd/
     └── {originFileId}/
         ├── {originFileId}_{fileName}
         └── {fileId}_{fileName}
 ```
 
-Пример
+Example
 
 ```text
 ./data/storage/
@@ -41,11 +41,11 @@
         └── 9ab2e1_interview.mp4
 ```
 
-### Данные файлов
+### File data
 
-**Хранение:** Redis
+**Storage:** Redis
 
-**1 Данные о файлах:**  
+**1 File data:**  
 Hash:`media:${originFileId}`
 
 | Field      | Value            |
@@ -54,26 +54,26 @@ Hash:`media:${originFileId}`
 
 #### MediaFile
 
-| Поле           | Описание                                                    | Тип         |
-|----------------|-------------------------------------------------------------|-------------|
-| `id`           | Идентификатор файла. У оригинала совпадает с `originFileId` | `UUID`      |
-| `originFileId` | Идентификатор группы, оригинального файла                   | `UUID`      |
-| `originName`   | Исходное имя файла                                          | `String`    |
-| `path`         | Путь к файлу в постоянном хранилище                         | `String`    |
-| `mediaType`    | Вид медиа: `VIDEO` или `AUDIO`                              | `MediaType` |
-| `contentType`  | MIME-тип                                                    | `String`    |
-| `duration`     | Длительность, секунды                                       | `Double`    |
-| `sizeBytes`    | Размер, байты                                               | `Long`      |
-| `format`       | Имя контейнера                                              | `String`    |
-| `width`        | Ширина кадра                                                | `Integer`   |
-| `height`       | Высота кадра                                                | `Integer`   |
-| `videoCodec`   | Кодек видео                                                 | `String`    |
-| `audioCodec`   | Кодек аудио                                                 | `String`    |
-| `createdAt`    | Момент сохранения записи                                    | `Instant`   |
+| Field          | Description                                               | Type        |
+|----------------|-----------------------------------------------------------|-------------|
+| `id`           | File id. For the original file, it matches `originFileId` | `UUID`      |
+| `originFileId` | Group Id. It matches the original file id                 | `UUID`      |
+| `originName`   | Original file name                                        | `String`    |
+| `path`         | File path in permanent storage                            | `String`    |
+| `mediaType`    | Media type: `VIDEO` or `AUDIO`                            | `MediaType` |
+| `contentType`  | MIME type                                                 | `String`    |
+| `duration`     | Duration, seconds                                         | `Double`    |
+| `sizeBytes`    | File size, bytes                                          | `Long`      |
+| `format`       | Container format                                          | `String`    |
+| `width`        | Width                                                     | `Integer`   |
+| `height`       | Height                                                    | `Integer`   |
+| `videoCodec`   | Video codec                                               | `String`    |
+| `audioCodec`   | Audio codec                                               | `String`    |
+| `createdAt`    | Time when the record was saved                            | `Instant`   |
 
-**2 Время жизни группы файлов**  
+**2 Group lifetime**  
 Sorted Set: `media:expirations`
 
-| Member           | Score                      |
-|------------------|----------------------------|
-| `{originFileId}` | Unix-время окончания срока |
+| Member           | Score                            |
+|------------------|----------------------------------|
+| `{originFileId}` | Unix time when the lifetime ends |
