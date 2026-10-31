@@ -31,16 +31,16 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/media")
 public class MediaStorageController {
-    final MediaFileOperationsService mediaFIleOperationsService;
+    final MediaFileOperationsService mediaFileOperationsService;
 
     @PostMapping("/upload")
     public ResponseEntity<MediaFileDto> upload(final MultipartFile file) {
-        return ResponseEntity.ok(mediaFIleOperationsService.uploadAndGetMediaFileData(file));
+        return ResponseEntity.ok(mediaFileOperationsService.uploadAndGetMediaFileData(file));
     }
 
     @GetMapping("/{originalFileId}/{id}/download")
     public ResponseEntity<?> download(final @PathVariable UUID originalFileId, final @PathVariable UUID id) {
-        final DownloadResult result = mediaFIleOperationsService.getDataForDownloading(originalFileId, id);
+        final DownloadResult result = mediaFileOperationsService.getDataForDownloading(originalFileId, id);
 
         return switch (result) {
             case LocalFile localFile -> ResponseEntity.ok()

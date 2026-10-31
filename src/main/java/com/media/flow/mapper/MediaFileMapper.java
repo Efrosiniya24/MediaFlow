@@ -27,5 +27,5 @@ public interface MediaFileMapper {
     MediaFile toEntity(MediaFileDto dto);
 
     @Mapping(source = "mediaFile.originName", target = "fileName")
-    MediaFileDto toDto(MediaFile mediaFile, Instant expiresAt);
+    MediaFileDto toDto(MediaFile mediaFile, Instant expiresAt, String permanentPath);
 }

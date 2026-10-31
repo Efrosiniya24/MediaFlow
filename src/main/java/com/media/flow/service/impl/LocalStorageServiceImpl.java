@@ -104,6 +104,14 @@ public class LocalStorageServiceImpl implements LocalStorageService {
         }
     }
 
+    @Override
+    public StoredMedia reserveDerivedFile(final Path sourceFilePath, final String fileName) {
+        final UUID id = UUID.randomUUID();
+        final String name = sanitizeFileName(fileName);
+        final Path targetPath = sourceFilePath.getParent().resolve(id + "_" + name);
+        return new StoredMedia(targetPath, id, name);
+    }
+
     private void deleteDirectoryAndFiles(final Path path) {
         try (final Stream<Path> walk = Files.walk(path)) {
             walk.sorted(Comparator.reverseOrder())

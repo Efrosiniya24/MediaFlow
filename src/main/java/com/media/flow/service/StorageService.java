@@ -3,6 +3,7 @@ package com.media.flow.service;
 import com.media.flow.record.StoredMedia;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.util.UUID;
 
 /**
@@ -53,4 +54,14 @@ public interface StorageService {
      * Cleans up those directories along with their files, if they exist
      */
     void cleanUpOrphanedStorageDirectories();
+
+    /**
+     * Reserves a path for a derived file in the same directory as the source.
+     * The file itself is written by the caller.
+     *
+     * @param sourceFilePath path of the source file in permanent storage
+     * @param fileName       clean name of the derived file
+     * @return new id, clean name and target path
+     */
+    StoredMedia reserveDerivedFile(Path sourceFilePath, String fileName);
 }

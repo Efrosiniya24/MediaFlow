@@ -52,6 +52,35 @@ public class FfmpegServiceImpl implements FfmpegService {
         }
     }
 
+    @Override
+    public void extractAudio(final Path sourcePath, final Path targetPath) {
+        try {
+            final ProcessBuilder processBuilder = new ProcessBuilder(
+                "ffmpeg",
+                "-nostdin",
+                "-y",
+                "-i", sourcePath.toAbsolutePath().toString(),
+                "-map", "0:a:0",
+                "-vn",
+                "-c:a", "copy",
+                targetPath.toAbsolutePath().toString()
+            );
+            processBuilder.redirectErrorStream(true);
+
+            final Process process = processBuilder.start();
+            process.getInputStream().readAllBytes();
+            final int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new FfmpegException("Ffmpeg failed with exit code " + exitCode);
+            }
+        } catch (final InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new FfmpegException("Failed to extract audio");
+        } catch (final IOException ex) {
+            throw new FfmpegException("Failed to extract audio");
+        }
+    }
+
     private MediaFileDto mapToDto(final Path filePath, final JsonNode root) {
         final JsonNode format = root.path("format");
         final JsonNode streams = root.path("streams");

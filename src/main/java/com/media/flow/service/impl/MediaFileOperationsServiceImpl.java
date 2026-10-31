@@ -57,7 +57,7 @@ public class MediaFileOperationsServiceImpl implements MediaFileOperationsServic
             fillInMediaFile(mediaFile, permanentPath, temporary, uuid, contentType);
 
             final Instant expiresAt = redisRepository.save(mediaFile);
-            return mediaFileMapper.toDto(mediaFile, expiresAt);
+            return mediaFileMapper.toDto(mediaFile, expiresAt, permanentPath);
         } finally {
             storageService.deleteFile(temporary);
         }

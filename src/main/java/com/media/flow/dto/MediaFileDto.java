@@ -31,4 +31,5 @@ public class MediaFileDto {
     private String videoCodec;
     private String audioCodec;
     private Instant expiresAt;
+    private String permanentPath;
 }
