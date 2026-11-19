@@ -6,7 +6,9 @@ COPY src ./src
 RUN mvn -DskipTests package
 
 FROM eclipse-temurin:21-jre
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
+RUN sed -i 's/Components: main/Components: main universe/' /etc/apt/sources.list.d/ubuntu.sources \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
