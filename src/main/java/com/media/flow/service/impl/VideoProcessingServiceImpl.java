@@ -1,8 +1,9 @@
 package com.media.flow.service.impl;
 
 import com.media.flow.dto.MediaFileDto;
+import com.media.flow.enums.ErrorCategory;
 import com.media.flow.enums.MediaType;
-import com.media.flow.exception.BadRequestException;
+import com.media.flow.exception.BusinessException;
 import com.media.flow.mapper.MediaFileMapper;
 import com.media.flow.model.MediaFile;
 import com.media.flow.record.StoredMedia;
@@ -36,11 +37,11 @@ public class VideoProcessingServiceImpl implements VideoProcessingService {
         final MediaFile mediaFile = redisRepository.findByOriginFileIdAndId(originalFileId, id);
 
         if (mediaFile.getMediaType() != MediaType.VIDEO) {
-            throw new BadRequestException("File is not a video");
+            throw new BusinessException(ErrorCategory.INVALID_INPUT, "File is not a video");
         }
 
         if (Objects.isNull(mediaFile.getAudioCodec())) {
-            throw new BadRequestException("Video without audio");
+            throw new BusinessException(ErrorCategory.INVALID_INPUT, "Video without audio");
         }
 
         final String newFileName = audioFileName(mediaFile);

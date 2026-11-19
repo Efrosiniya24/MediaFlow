@@ -2,7 +2,7 @@ package com.media.flow.service.impl;
 
 import com.media.flow.dto.MediaFileDto;
 import com.media.flow.enums.MediaType;
-import com.media.flow.exception.FfmpegException;
+import com.media.flow.exception.InfrastructureException;
 import com.media.flow.service.FfmpegService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,14 +41,14 @@ public class FfmpegServiceImpl implements FfmpegService {
             final String json = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new FfmpegException("Ffprobe failed with exit code " + exitCode);
+                throw new InfrastructureException("Ffprobe failed with exit code " + exitCode);
             }
             return mapToDto(filePath, objectMapper.readTree(json));
         } catch (final InterruptedException ex) {
             Thread.currentThread().interrupt();
-            throw new FfmpegException("Failed to probe media file");
+            throw new InfrastructureException("Failed to probe media file", ex);
         } catch (final IOException ex) {
-            throw new FfmpegException("Failed to probe media file");
+            throw new InfrastructureException("Failed to probe media file", ex);
         }
     }
 
@@ -71,13 +71,13 @@ public class FfmpegServiceImpl implements FfmpegService {
             process.getInputStream().readAllBytes();
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new FfmpegException("Ffmpeg failed with exit code " + exitCode);
+                throw new InfrastructureException("Ffmpeg failed with exit code " + exitCode);
             }
         } catch (final InterruptedException ex) {
             Thread.currentThread().interrupt();
-            throw new FfmpegException("Failed to extract audio");
+            throw new InfrastructureException("Failed to extract audio", ex);
         } catch (final IOException ex) {
-            throw new FfmpegException("Failed to extract audio");
+            throw new InfrastructureException("Failed to extract audio", ex);
         }
     }
 

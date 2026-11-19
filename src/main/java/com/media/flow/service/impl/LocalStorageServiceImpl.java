@@ -1,13 +1,12 @@
 package com.media.flow.service.impl;
 
 import com.media.flow.config.properties.StorageProperties;
-import com.media.flow.exception.StorageException;
+import com.media.flow.exception.InfrastructureException;
 import com.media.flow.record.StoredMedia;
 import com.media.flow.service.LocalStorageService;
 import com.media.flow.utils.DateUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +26,6 @@ import java.util.stream.Stream;
  * @since 29.07.2026
  */
 @ConditionalOnProperty(name = "storage.type", havingValue = "local")
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LocalStorageServiceImpl implements LocalStorageService {
@@ -39,8 +37,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
             Files.createDirectories(Paths.get(storageProperties.getTempDir()));
             Files.createDirectories(Paths.get(storageProperties.getPermanentDir()));
         } catch (final IOException ex) {
-            log.error("Failed to initialize storage directories", ex);
-            throw new StorageException("Failed to initialize storage directories");
+            throw new InfrastructureException("Failed to initialize storage directories", ex);
         }
     }
 
@@ -62,8 +59,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
         try {
             Files.deleteIfExists(storedMedia.localPath());
         } catch (final IOException ex) {
-            log.error("Failed to delete file", ex);
-            throw new StorageException("Failed to delete file");
+            throw new InfrastructureException("Failed to delete file", ex);
         }
     }
 
@@ -99,8 +95,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
                 .map(dir -> dir.getFileName().toString())
                 .forEach(this::deleteDirectoryByDate);
         } catch (final IOException ex) {
-            log.error("Failed to clean up orphaned storage directories", ex);
-            throw new StorageException("Failed to clean up orphaned storage directories");
+            throw new InfrastructureException("Failed to clean up orphaned storage directories", ex);
         }
     }
 
@@ -117,8 +112,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
             walk.sorted(Comparator.reverseOrder())
                 .forEach(this::deletePath);
         } catch (final IOException ex) {
-            log.error("Failed to delete directory {}", path, ex);
-            throw new StorageException("Failed to delete directory");
+            throw new InfrastructureException("Failed to delete directory", ex);
         }
     }
 
@@ -154,7 +148,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
         try {
             Files.deleteIfExists(path);
         } catch (final IOException ex) {
-            throw new StorageException("Failed to delete path: " + path);
+            throw new InfrastructureException("Failed to delete path: " + path, ex);
         }
     }
 
@@ -168,8 +162,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
             file.transferTo(filePath);
             return new StoredMedia(filePath, id, originalName);
         } catch (final IOException ex) {
-            log.error("Failed to save uploaded file", ex);
-            throw new StorageException("Failed to save uploaded file");
+            throw new InfrastructureException("Failed to save uploaded file", ex);
         }
     }
 
@@ -187,8 +180,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
         try {
             return Files.move(tempPath, permanentPath);
         } catch (final IOException ex) {
-            log.error("Failed to move file to permanent storage", ex);
-            throw new StorageException("Failed to move file to permanent storage");
+            throw new InfrastructureException("Failed to move file to permanent storage", ex);
         }
     }
 
@@ -201,8 +193,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
         try {
             return Files.createDirectories(directory);
         } catch (final IOException ex) {
-            log.error("Failed to create directory", ex);
-            throw new StorageException("Failed to create directory");
+            throw new InfrastructureException("Failed to create directory", ex);
         }
     }
 }

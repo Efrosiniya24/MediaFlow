@@ -1,7 +1,8 @@
 package com.media.flow.repository;
 
 import com.media.flow.constant.RedisKeys;
-import com.media.flow.exception.NotFoundException;
+import com.media.flow.enums.ErrorCategory;
+import com.media.flow.exception.BusinessException;
 import com.media.flow.model.MediaFile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -36,7 +37,7 @@ public class RedisHashRepositoryImpl implements RedisHashRepository {
             .get(RedisKeys.media(originFileId), fileId.toString());
 
         if (Objects.isNull(mediaFile)) {
-            throw new NotFoundException("Media file not found");
+            throw new BusinessException(ErrorCategory.FILE_NOT_FOUND, "Media file not found");
         }
         return mediaFile;
     }
